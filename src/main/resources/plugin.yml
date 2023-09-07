@@ -1,0 +1,9 @@
+name: FanaClaim
+version: 1.0
+main: me.ahmetflix.claim.FanaClaim
+api-version: 1.19
+depend:
+  - GriefPrevention
+commands:
+  reloadfanaclaim:
+    description: FanaClaim pluginini yeniden yükler.

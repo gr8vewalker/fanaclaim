@@ -1,0 +1,163 @@
+settings:
+  REFUND_CLAIM_BLOCKS: true
+  CUSTOM_WORLD_NAMES:
+    world: Dünya
+  # claim süresinin maksimum ne kadara ulaşabileceğini belirler
+  MAX_CLAIM_DAYS_BY_PERMISSION:
+    perm: 60
+    default: 30
+  DAY_PRICE: 1000 # 1 gün uzatmak için gerekli ücret
+gui:
+  claim-menu:
+    title: "<gray>Claim"
+    FILLER: &filler
+      ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+      material: BLACK_STAINED_GLASS_PANE
+      name: "<gray> "
+      lore: []
+    OTHER:
+      - ==: me.ahmetflix.claim.gui.item.ConfigItem
+        slot: 9
+        update: true
+        identifier: claim-info
+        item:
+          ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+          material: BOOK
+          name: "<color:#e8e850>Claim Bilgi"
+          lore:
+            - ""
+            - "<color:#f3f3a0>Claim Genişliği <gray>▶ <color:#e8e850><size>"
+            - "<color:#f3f3a0>Claim Koordinatları <gray>▶ <color:#e8e850>x: <x>, y: <y>, z: <z>"
+            - "<color:#f3f3a0>Claim Süresi <gray>▶ <color:#e8e850><remaining>"
+      - ==: me.ahmetflix.claim.gui.item.ConfigItem
+        slot: 11
+        update: false
+        identifier: claim-time
+        item:
+          ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+          material: CLOCK
+          name: "<color:#e8e850>Claim Süresi Uzatma"
+          lore:
+            - ""
+            - "<color:#f3f3a0>Claim süreni uzatmak için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
+      - ==: me.ahmetflix.claim.gui.item.ConfigItem
+        slot: 13
+        update: false
+        identifier: claim-list
+        item:
+          ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+          material: GRASS_BLOCK
+          name: "<color:#e8e850>Claim Listesi"
+          lore:
+            - ""
+            - "<color:#f3f3a0>Claimlerini görüntülemek için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
+      - ==: me.ahmetflix.claim.gui.item.ConfigItem
+        slot: 15
+        update: false
+        identifier: claim-remove
+        item:
+          ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+          material: BARRIER
+          name: "<color:#e8e850>Claim Sil"
+          lore: []
+      - ==: me.ahmetflix.claim.gui.item.ConfigItem
+        slot: 17
+        update: false
+        identifier: claim-config
+        item:
+          ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+          material: SPYGLASS
+          name: "<color:#e8e850>Claim Ayarları"
+          lore: []
+  claim-list:
+    title: "<gray>Claim Listesi"
+    CLAIM:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+      material: GRASS_BLOCK
+      name: "<color:#e8e850>Claimin"
+      lore:
+        - "<color:#f3f3a0>Lokasyon: <color:#e8e850>x: <x>, y: <y>, z: <z>"
+        - "<color:#f3f3a0>Kalan Süre: <color:#e8e850><remaining>"
+        - "<color:#f3f3a0>Bölge: <color:#e8e850><world>"
+    PREVIOUS:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 18
+      update: false
+      identifier: previous
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: ARROW
+        name: "<color:#e8e850>Geri"
+        lore: []
+    NEXT:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 26
+      update: false
+      identifier: next
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: ARROW
+        name: "<color:#e8e850>İleri"
+        lore: []
+  claim-remove:
+    title: "<gray>Claim Sil"
+    FILLER: *filler
+    BACK: &back
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 26
+      update: false
+      identifier: back
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: ARROW
+        name: "<color:#e8e850>Geri"
+        lore: [ ]
+    VERIFY_REMOVAL:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 13
+      update: false
+      identifier: verify-removal
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: TNT
+        name: "                            <color:#e8e850><bold>DUR!</bold>"
+        lore:
+          - ""
+          - "  <color:#f3f3a0>Claimini kaldırmaya emin misin?"
+          - "<color:#f3f3a0>Onaylamak için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
+  claim-time:
+    title: "<gray>Claim Süresi Uzatma"
+    FILLER: *filler
+    BACK: *back
+    EXTEND_CONFIRM:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 4
+      update: false
+      identifier: extend-confirm
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: BLAZE_ROD
+        name: "<green>Onaylamak için tıkla<color:#f3f3a0>!"
+        lore:
+          - "<color:#f3f3a0>Toplam Fiyat <gray>▶ <color:#e8e850><price>"
+          - "<color:#f3f3a0>Uzatılacak Gün <gray>▶ <color:#e8e850><day>"
+    EXTEND_ADD_DAY:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 14
+      update: false
+      identifier: extend-add-day
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: CLOCK
+        name: "<color:#e8e850>1 Gün <color:#f3f3a0>Ekle"
+        lore: []
+    EXTEND_REMOVE_DAY:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 12
+      update: false
+      identifier: extend-remove-day
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: COMPASS
+        name: "<color:#e8e850>1 Gün <color:#f3f3a0>Azalt"
+        lore: []
