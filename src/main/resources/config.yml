@@ -6,7 +6,11 @@ settings:
   MAX_CLAIM_DAYS_BY_PERMISSION:
     perm: 60
     default: 30
-  DAY_PRICE: 1000 # 1 gün uzatmak için gerekli ücret
+  # formül: gün * EXTEND_TIME_PRICE * metrekare
+  # örnek: 1 * EXTEND_TIME_PRICE * 64 (8 e 8lik bi claim)
+  EXTEND_TIME_PRICE: 50
+  # yeni açılan claimin ilk sahip olduğu claim sayısı
+  DEFAULT_DAYS: 30
   SETHOME_COMMANDS: ["sethome", "esethome", "createhome", "ecreatehome"]
 gui:
   claim-menu:

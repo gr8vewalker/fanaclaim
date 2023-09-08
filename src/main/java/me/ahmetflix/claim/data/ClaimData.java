@@ -33,7 +33,7 @@ public class ClaimData {
     private final ObjectOpenHashSet<UUID> guis = new ObjectOpenHashSet<>();
 
     public ClaimData(long id) {
-        this(id, true, true, System.currentTimeMillis() + 86400000L, new Object2ObjectOpenHashMap<>());
+        this(id, true, true, System.currentTimeMillis() + (Settings.DEFAULT_DAYS.getInt() * 86400000L), new Object2ObjectOpenHashMap<>());
     }
 
     public ClaimData(long id, boolean animals, boolean mobs, long end, Object2ObjectOpenHashMap<UUID, Flags> flags) {

@@ -97,7 +97,7 @@ public class ClaimExtendMenu {
             long newMs = data.getEnd() + (increment * 1000 * 60 * 60 * 24L);
             long maxMsCurrent = System.currentTimeMillis() + maxMs;
             if (newMs > maxMsCurrent) increment = (int) ((maxMsCurrent - data.getEnd()) / (1000 * 60 * 60 * 24L));
-            int price = Settings.DAY_PRICE.getInt() * increment;
+            int price = data.getArea() * Settings.EXTEND_TIME_PRICE.getInt() * increment;
             this.menu.confirmExtend.addToInventoryAmount(inventory, increment, TagResolver.resolver("price", Tag.preProcessParsed(String.valueOf(price))),
                                                    TagResolver.resolver("day", Tag.preProcessParsed(String.valueOf(increment))));
         }
@@ -123,7 +123,7 @@ public class ClaimExtendMenu {
                     generateConfirmItem();
                 } else if (identifier.equals(menu.confirmExtend.getIdentifier())) {
                     if (increment > 0) {
-                        int price = Settings.DAY_PRICE.getInt() * increment;
+                        int price = data.getArea() * Settings.EXTEND_TIME_PRICE.getInt() * increment;
                         if (!FanaClaim.getEconomy().has(player, price)) {
                             Messages.NOT_ENOUGH_MONEY.send(player);
                             return;
