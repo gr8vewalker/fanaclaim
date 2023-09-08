@@ -4,6 +4,15 @@ main: me.ahmetflix.claim.FanaClaim
 api-version: 1.19
 depend:
   - GriefPrevention
+  - Vault
+softdepend:
+  - SkinsRestorer
 commands:
+  fanaclaim:
+    description: FanaClaim temel komutu
+    aliases: [fc]
+  fanaclaimlist:
+    description: Claim listesi menüsünü açar
+    aliases: [claimlist, claimlerim, claimliste, fcl]
   reloadfanaclaim:
     description: FanaClaim pluginini yeniden yükler.

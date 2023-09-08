@@ -1,11 +1,13 @@
 package me.ahmetflix.claim.listener;
 
+import it.unimi.dsi.fastutil.objects.Object2LongArrayMap;
 import me.ahmetflix.claim.FanaClaim;
 import me.ahmetflix.claim.data.ClaimData;
 import me.ahmetflix.claim.data.Flag;
 import me.ahmetflix.claim.data.Flags;
 import me.ahmetflix.claim.gui.MenuType;
 import me.ahmetflix.claim.message.Messages;
+import me.ahmetflix.claim.settings.Settings;
 import me.ahmetflix.claim.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Claim;
 import org.bukkit.Material;
@@ -29,6 +31,8 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.BlockInventoryHolder;
+
+import java.util.UUID;
 
 public class ClaimListener implements Listener {
 
@@ -89,6 +93,27 @@ public class ClaimListener implements Listener {
             claimData = FanaClaim.getInstance().getClaimManager().addClaim(claim.getID());
         }
         claimData.openMenu(player, MenuType.MAIN_CLAIM);
+    }
+
+    @EventHandler(priority=EventPriority.LOWEST)
+    public void onSethome(PlayerCommandPreprocessEvent event) {
+        String msg = event.getMessage();
+        String command = msg.split(" ")[0].substring(1);
+        boolean isSethome = Settings.SETHOME_COMMANDS.getList(String.class).stream()
+                .anyMatch(cmd -> cmd.equalsIgnoreCase(command));
+        if (!isSethome) return;
+        Player player = event.getPlayer();
+        Claim claim = FanaClaim.getGriefPreventionDataStore().getClaimAt(player.getLocation(), false, null);
+        if (claim == null) return;
+        ClaimData claimData = FanaClaim.getInstance().getClaimManager().getClaim(claim.getID());
+        if (claimData == null) {
+            claimData = FanaClaim.getInstance().getClaimManager().addClaim(claim.getID());
+        }
+        Flags flags = claimData.getFlags(player.getUniqueId());
+        if (!flags.getFlag(Flag.USE_SETHOME)) {
+            Messages.CANT_USE_COMMAND.send(player);
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -240,6 +265,8 @@ public class ClaimListener implements Listener {
         }
     }
 
+    private Object2LongArrayMap<UUID> physicalWarnings = new Object2LongArrayMap<>();
+
     @EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
     public void onPhysicalInteract(PlayerInteractEvent event) {
         if (event.getPlayer().isOp()) return;
@@ -258,8 +285,13 @@ public class ClaimListener implements Listener {
                 || type == Material.TRIPWIRE
                 || type.name().endsWith("_PRESSURE_PLATE")) could = flags.getFlag(Flag.TRIGGER_REDSTONE);
         if (!could) {
-            Messages.CANT_USE.send(event.getPlayer());
             event.setCancelled(true);
+            if (physicalWarnings.containsKey(event.getPlayer().getUniqueId())) {
+                long last = physicalWarnings.getLong(event.getPlayer().getUniqueId());
+                if (System.currentTimeMillis() - last < 2000) return;
+            }
+            physicalWarnings.put(event.getPlayer().getUniqueId(), System.currentTimeMillis());
+            Messages.CANT_USE.send(event.getPlayer());
         }
     }
 

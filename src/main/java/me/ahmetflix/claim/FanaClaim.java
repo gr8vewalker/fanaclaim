@@ -1,6 +1,9 @@
 package me.ahmetflix.claim;
 
+import me.ahmetflix.claim.command.FanaClaimCommand;
+import me.ahmetflix.claim.command.FanaClaimListCommand;
 import me.ahmetflix.claim.command.ReloadCommand;
+import me.ahmetflix.claim.data.Flag;
 import me.ahmetflix.claim.gui.*;
 import me.ahmetflix.claim.gui.item.ConfigItem;
 import me.ahmetflix.claim.listener.ClaimCreateListener;
@@ -23,7 +26,9 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FanaClaim extends JavaPlugin {
 
@@ -35,6 +40,7 @@ public class FanaClaim extends JavaPlugin {
     private static FanaClaim instance;
     private static DataStore griefPreventionDataStore;
     private static Economy economy;
+    private static boolean skinsRestorer;
 
     public static FanaClaim getInstance() {
         return instance;
@@ -48,11 +54,18 @@ public class FanaClaim extends JavaPlugin {
         return economy;
     }
 
+    public static boolean isSkinsRestorer() {
+        return skinsRestorer;
+    }
+
     private ClaimManager claimManager;
     private ClaimMenu claimMenu;
     private ClaimListMenu claimListMenu;
     private ClaimRemoveMenu claimRemoveMenu;
     private ClaimExtendMenu claimExtendMenu;
+    private ClaimSettingsMenu claimSettingsMenu;
+    private ClaimSettingsPlayerListMenu claimSettingsPlayerListMenu;
+    private ClaimSettingsPlayerMenu claimSettingsPlayerMenu;
 
     public ClaimManager getClaimManager() {
         return claimManager;
@@ -72,6 +85,18 @@ public class FanaClaim extends JavaPlugin {
 
     public ClaimExtendMenu getClaimExtendMenu() {
         return claimExtendMenu;
+    }
+
+    public ClaimSettingsMenu getClaimSettingsMenu() {
+        return claimSettingsMenu;
+    }
+
+    public ClaimSettingsPlayerListMenu getClaimSettingsPlayerListMenu() {
+        return claimSettingsPlayerListMenu;
+    }
+
+    public ClaimSettingsPlayerMenu getClaimSettingsPlayerMenu() {
+        return claimSettingsPlayerMenu;
     }
 
     @Override
@@ -112,6 +137,9 @@ public class FanaClaim extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> claimManager.save(), thirtyMinTicks, thirtyMinTicks);
         new ClaimExpireRunnable().runTaskTimerAsynchronously(this, 0L, 20L);
         getCommand("reloadfanaclaim").setExecutor(new ReloadCommand());
+        getCommand("fanaclaim").setExecutor(new FanaClaimCommand());
+        getCommand("fanaclaimlist").setExecutor(new FanaClaimListCommand());
+        skinsRestorer = pluginManager.isPluginEnabled("SkinsRestorer");
     }
 
     @Override
@@ -129,6 +157,9 @@ public class FanaClaim extends JavaPlugin {
         ConfigurationSection guiClaimListMenu = gui.getConfigurationSection("claim-list");
         ConfigurationSection guiClaimRemoveMenu = gui.getConfigurationSection("claim-remove");
         ConfigurationSection guiClaimExtendMenu = gui.getConfigurationSection("claim-time");
+        ConfigurationSection guiClaimSettingsMenu = gui.getConfigurationSection("claim-config");
+        ConfigurationSection guiClaimSettingsPlayerListMenu = gui.getConfigurationSection("claim-config-playerlist");
+        ConfigurationSection guiClaimSettingsPlayerMenu = gui.getConfigurationSection("claim-config-player");
         claimMenu = new ClaimMenu(
                 MiniMessage.miniMessage().deserialize(guiClaimMenu.getString("title", "Claim")),
                 (List<ConfigItem>) guiClaimMenu.getList("OTHER"),
@@ -153,6 +184,35 @@ public class FanaClaim extends JavaPlugin {
                 guiClaimExtendMenu.getObject("EXTEND_CONFIRM", ConfigItem.class),
                 guiClaimExtendMenu.getObject("BACK", ConfigItem.class),
                 guiClaimExtendMenu.getObject("FILLER", ConfigItem.ItemInfo.class)
+        );
+        claimSettingsMenu = new ClaimSettingsMenu(
+                MiniMessage.miniMessage().deserialize(guiClaimSettingsMenu.getString("title", "Claim Settings")),
+                guiClaimSettingsMenu.getObject("BACK", ConfigItem.class),
+                guiClaimSettingsMenu.getObject("ANIMALS_ENABLED", ConfigItem.class),
+                guiClaimSettingsMenu.getObject("ANIMALS_DISABLED", ConfigItem.class),
+                guiClaimSettingsMenu.getObject("MONSTERS_ENABLED", ConfigItem.class),
+                guiClaimSettingsMenu.getObject("MONSTERS_DISABLED", ConfigItem.class),
+                guiClaimSettingsMenu.getObject("MEMBERS", ConfigItem.class),
+                guiClaimSettingsMenu.getObject("FILLER", ConfigItem.ItemInfo.class)
+        );
+        claimSettingsPlayerListMenu = new ClaimSettingsPlayerListMenu(
+                MiniMessage.miniMessage().deserialize(guiClaimSettingsPlayerListMenu.getString("title", "Claim Settings")),
+                guiClaimSettingsPlayerListMenu.getObject("BACK", ConfigItem.class),
+                guiClaimSettingsPlayerListMenu.getObject("PREVIOUS", ConfigItem.class),
+                guiClaimSettingsPlayerListMenu.getObject("NEXT", ConfigItem.class),
+                guiClaimSettingsPlayerListMenu.getObject("PLAYER", ConfigItem.ItemInfo.class)
+        );
+        Map<Flag, Integer> flagMap = new HashMap<>();
+        guiClaimSettingsPlayerMenu.getConfigurationSection("SLOTS").getValues(false)
+                .forEach((key, value) -> flagMap.put(Flag.valueOf(key), (Integer) value));
+        claimSettingsPlayerMenu = new ClaimSettingsPlayerMenu(
+                guiClaimSettingsPlayerMenu.getString("title", "Claim Settings"),
+                guiClaimSettingsPlayerMenu.getObject("PLAYER", ConfigItem.class),
+                guiClaimSettingsPlayerMenu.getObject("BACK", ConfigItem.class),
+                guiClaimSettingsPlayerMenu.getObject("FLAG_ENABLED", ConfigItem.ItemInfo.class),
+                guiClaimSettingsPlayerMenu.getObject("FLAG_DISABLED", ConfigItem.ItemInfo.class),
+                guiClaimSettingsPlayerMenu.getObject("FILLER", ConfigItem.ItemInfo.class),
+                flagMap
         );
         Messages.load();
     }

@@ -8,6 +8,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.stream.IntStream;
 
@@ -81,14 +82,18 @@ public class ClaimRemoveMenu {
 
         @Override
         public void onClick(InventoryClickEvent event) {
+            event.setCancelled(true);
             if (event.getClickedInventory() == null || event.getClickedInventory().getHolder() != this) {
                 return;
             }
-            event.setCancelled(true);
             if (event.getClickedInventory() == inventory) {
-                if (event.getSlot() == menu.back.getSlot()) {
+                ItemStack clicked = inventory.getItem(event.getSlot());
+                if (clicked == null) return;
+                String identifier = clicked.getPersistentDataContainer().get(ConfigItem.IDENTIFIER_KEY, PersistentDataType.STRING);
+                if (identifier == null) return;
+                if (identifier.equals(menu.back.getIdentifier())) {
                     data.openMenu(player, MenuType.MAIN_CLAIM);
-                } else if (event.getSlot() == menu.verifyRemoval.getSlot()) {
+                } else if (identifier.equals(menu.verifyRemoval.getIdentifier())) {
                     player.closeInventory();
                     Messages.CLAIM_DELETED.send(player);
                     FanaClaim.getInstance().getClaimManager().deleteClaim(data.getGriefPreventionClaim());

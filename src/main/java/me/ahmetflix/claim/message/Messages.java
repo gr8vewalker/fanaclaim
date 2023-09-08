@@ -25,10 +25,25 @@ public class Messages {
     public static final Message CANT_PULL = new Message("<red>Bu claimde olta ile canlı çekmek yasaklı!");
     public static final Message CANT_OPEN_CONTAINER = new Message("<red>Bu claimde saklama bloklarını açamazsın!");
     public static final Message CANT_USE = new Message("<red>Bu claimde bu bloğu kullanamazsın!");
+    public static final Message CANT_USE_COMMAND = new Message("<red>Bu claimde bu komutu kullanamazsın!");
     public static final Message NOT_OWNER = new Message("<red>Bu claimin sahibi değilsin!");
+    public static final Message NO_CLAIM = new Message("<red>Bu bölgede bir claim yok!");
     public static final Message NOT_ENOUGH_MONEY = new Message("<red>Yeterli bakiyen yok!");
 
     public static final Message INTERNAL_ERROR = new Message("<red>Bir hata oluştu!");
+
+    public static final Message FLAG_BUILD = new Message("Blok Kırma/Koyma");
+    public static final Message FLAG_BUILD_HOPPERS = new Message("Huni Kırma/Koyma");
+    public static final Message FLAG_BREAK_BEACON = new Message("Fener Kırma");
+    public static final Message FLAG_BREAK_SPAWNER = new Message("Spawner Kırma");
+    public static final Message FLAG_PLACE_SPAWNER = new Message("Spawner Koyma");
+    public static final Message FLAG_PLACE_FLUID = new Message("Lav/Su Koyma");
+    public static final Message FLAG_PLACE_ENTITIES = new Message("Tekne/Vagon Koyma");
+    public static final Message FLAG_USE_ROD_ON_ENTITIES = new Message("Olta İle Canlı Çekme");
+    public static final Message FLAG_USE_DOORS = new Message("Kapı Kullanma");
+    public static final Message FLAG_USE_SETHOME = new Message("/sethome Kullanma");
+    public static final Message FLAG_OPEN_CONTAINERS = new Message("Envanter Bloklarını Açma");
+    public static final Message FLAG_TRIGGER_REDSTONE = new Message("Redstone Devrelerini Tetikleme");
 
     public static void load() {
         try {

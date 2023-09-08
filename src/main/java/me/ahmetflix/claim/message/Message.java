@@ -21,12 +21,16 @@ public class Message {
         this.base = base;
     }
 
+    public Component build() {
+        return MiniMessage.miniMessage().deserialize(base);
+    }
+
     public void send(CommandSender sender) {
-        sender.sendMessage(MiniMessage.miniMessage().deserialize(base));
+        sender.sendMessage(build());
     }
 
     public void broadcast() {
-        Bukkit.broadcast(MiniMessage.miniMessage().deserialize(base));
+        Bukkit.broadcast(build());
     }
 
     public PlaceholderedMessage with(String placeholder, Component value) {

@@ -75,10 +75,10 @@ public class ClaimMenu {
 
         @Override
         public void onClick(InventoryClickEvent event) {
+            event.setCancelled(true);
             if (event.getClickedInventory() == null || event.getClickedInventory().getHolder() != this) {
                 return;
             }
-            event.setCancelled(true);
             if (event.getClickedInventory() == inventory) {
                 ConfigItem item = menu.getItems().stream()
                         .filter(i -> i.getSlot() == event.getSlot())

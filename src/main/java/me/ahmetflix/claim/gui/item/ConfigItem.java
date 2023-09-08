@@ -1,21 +1,27 @@
 package me.ahmetflix.claim.gui.item;
 
+import me.ahmetflix.claim.FanaClaim;
 import me.ahmetflix.claim.data.ClaimData;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class ConfigItem implements ConfigurationSerializable {
+
+    public static final NamespacedKey IDENTIFIER_KEY = new NamespacedKey(FanaClaim.getInstance(), "identifier");
 
     private final int slot;
     private final boolean update;
@@ -45,16 +51,22 @@ public class ConfigItem implements ConfigurationSerializable {
         return itemInfo;
     }
 
+    public void addToInventory(Inventory inventory, Consumer<ItemStack> editor, TagResolver... resolvers) {
+        ItemStack stack = itemInfo.toItemStack(identifier, resolvers);
+        editor.accept(stack);
+        inventory.setItem(slot, stack);
+    }
+
     public void addToInventory(ClaimData data, Inventory inventory) {
-        inventory.setItem(slot, itemInfo.toItemStack(data));
+        inventory.setItem(slot, itemInfo.toItemStack(identifier, data));
     }
 
     public void addToInventory(Inventory inventory, TagResolver... resolvers) {
-        inventory.setItem(slot, itemInfo.toItemStack(resolvers));
+        inventory.setItem(slot, itemInfo.toItemStack(identifier, resolvers));
     }
 
     public void addToInventoryAmount(Inventory inventory, int amount, TagResolver... resolvers) {
-        ItemStack itemStack = itemInfo.toItemStack(resolvers);
+        ItemStack itemStack = itemInfo.toItemStack(identifier, resolvers);
         itemStack.setAmount(amount);
         inventory.setItem(slot, itemStack);
     }
@@ -119,16 +131,25 @@ public class ConfigItem implements ConfigurationSerializable {
         }
 
         public ItemStack toItemStack(ClaimData data) {
-            return toItemStack(data.createTagResolvers());
+            return toItemStack(null, data.createTagResolvers());
         }
 
         public ItemStack toItemStack(TagResolver... tagResolvers) {
+            return toItemStack(null, tagResolvers);
+        }
+
+        public ItemStack toItemStack(String identifier, ClaimData data) {
+            return toItemStack(identifier, data.createTagResolvers());
+        }
+
+        public ItemStack toItemStack(String identifier, TagResolver... tagResolvers) {
             ItemStack itemStack = new ItemStack(material);
             itemStack.editMeta(meta -> {
-                meta.displayName(MiniMessage.miniMessage().deserialize(name).decoration(TextDecoration.ITALIC, false));
+                meta.displayName(MiniMessage.miniMessage().deserialize(name, tagResolvers).decoration(TextDecoration.ITALIC, false));
                 meta.lore(lore.stream()
                                   .map(line -> MiniMessage.miniMessage().deserialize(line, tagResolvers).decoration(TextDecoration.ITALIC, false))
                                   .collect(Collectors.toList()));
+                if (identifier != null) meta.getPersistentDataContainer().set(IDENTIFIER_KEY, PersistentDataType.STRING, identifier);
             });
             return itemStack;
         }

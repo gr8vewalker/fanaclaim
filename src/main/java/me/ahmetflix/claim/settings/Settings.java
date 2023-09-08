@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 public enum Settings {
@@ -11,7 +12,8 @@ public enum Settings {
     REFUND_CLAIM_BLOCKS(true),
     CUSTOM_WORLD_NAMES(Maps.newHashMap()),
     MAX_CLAIM_DAYS_BY_PERMISSION(Maps.newHashMap()),
-    DAY_PRICE(1000);
+    DAY_PRICE(1000),
+    SETHOME_COMMANDS(Arrays.asList("sethome", "esethome", "createhome", "ecreatehome"));
 
     private final Object defaultValue;
     private Object value;
@@ -39,6 +41,10 @@ public enum Settings {
 
     public int getInt() {
         return (int) value;
+    }
+
+    public <T> List<T> getList(Class<T> clazz) {
+        return (List<T>) value;
     }
 
     public void setValue(Object value) {

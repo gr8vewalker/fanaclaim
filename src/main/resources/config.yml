@@ -7,6 +7,7 @@ settings:
     perm: 60
     default: 30
   DAY_PRICE: 1000 # 1 gün uzatmak için gerekli ücret
+  SETHOME_COMMANDS: ["sethome", "esethome", "createhome", "ecreatehome"]
 gui:
   claim-menu:
     title: "<gray>Claim"
@@ -161,3 +162,145 @@ gui:
         material: COMPASS
         name: "<color:#e8e850>1 Gün <color:#f3f3a0>Azalt"
         lore: []
+  claim-config:
+    title: "<gray>Claim Ayarları"
+    FILLER: *filler
+    BACK: *back
+    ANIMALS_ENABLED:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 11
+      update: false
+      identifier: animals-enabled
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: CAT_SPAWN_EGG
+        name: '<color:#f3f3a0>Hayvan Doğuşu: <color:#58D68D>✔'
+        lore:
+          - ""
+          - "<color:#f3f3a0>Kapatmak için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
+    ANIMALS_DISABLED:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 11
+      update: false
+      identifier: animals-disabled
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: COW_SPAWN_EGG
+        name: '<color:#f3f3a0>Hayvan Doğuşu: <color:#EC7063>✘'
+        lore:
+          - ""
+          - "<color:#f3f3a0>Açmak için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
+    MONSTERS_ENABLED:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 13
+      update: false
+      identifier: monters-enabled
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: BLAZE_SPAWN_EGG
+        name: '<color:#f3f3a0>Canavar Doğuşu: <color:#58D68D>✔'
+        lore:
+          - ""
+          - "<color:#f3f3a0>Kapatmak için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
+    MONSTERS_DISABLED:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 13
+      update: false
+      identifier: monsters-disabled
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: ENDERMAN_SPAWN_EGG
+        name: '<color:#f3f3a0>Canavar Doğuşu: <color:#EC7063>✘'
+        lore:
+          - ""
+          - "<color:#f3f3a0>Açmak için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
+    MEMBERS:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 15
+      update: false
+      identifier: members
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: PLAYER_HEAD
+        name: "<color:#e8e850>Üyeler"
+        lore:
+          - ""
+          - "<color:#f3f3a0>Üyelerini görüntülemek için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
+  claim-config-playerlist:
+    title: "<gray>Üyeler"
+    PREVIOUS: #büyük ihtimalle görünmeyecek bile ama ne olur ne olmaz
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 45
+      update: false
+      identifier: previous
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: ARROW
+        name: "<color:#e8e850>Geri"
+        lore: [ ]
+    NEXT: #büyük ihtimalle görünmeyecek bile ama ne olur ne olmaz
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 53
+      update: false
+      identifier: next
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: ARROW
+        name: "<color:#e8e850>İleri"
+        lore: [ ]
+    BACK: &back2
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 49
+      update: false
+      identifier: back
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: ARROW
+        name: "<color:#e8e850>Ayarlara Geri Dön"
+        lore: []
+    PLAYER: # eğer player_head ayarlarsanız oyuncunun kafası gözükür
+      ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+      material: PLAYER_HEAD
+      name: "<color:#e8e850><player>"
+      lore: []
+  claim-config-player:
+    title: "<gray>Üye Ayarı (<player>)"
+    BACK: *back2
+    FLAG_ENABLED:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+      material: LIME_STAINED_GLASS_PANE
+      name: "<flag> <color:#58D68D>✔"
+      lore:
+        - ""
+        - "<color:#f3f3a0>Kapatmak için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
+    FLAG_DISABLED:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+      material: RED_STAINED_GLASS_PANE
+      name: "<flag> <color:#EC7063>✘"
+      lore:
+          - ""
+          - "<color:#f3f3a0>Açmak için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
+    PLAYER:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem
+        slot: 4
+        update: false
+        identifier: player
+        item:
+          ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+          material: PLAYER_HEAD
+          name: "<color:#e8e850><player>"
+          lore: []
+    FILLER: *filler
+    SLOTS:
+      BUILD: 20
+      BUILD_HOPPERS: 21
+      BREAK_BEACON: 22
+      BREAK_SPAWNER: 23
+      PLACE_SPAWNER: 24
+      PLACE_FLUID: 29
+      PLACE_ENTITIES: 30
+      USE_ROD_ON_ENTITIES: 31
+      USE_DOORS: 32
+      USE_SETHOME: 33
+      OPEN_CONTAINERS: 39
+      TRIGGER_REDSTONE: 41

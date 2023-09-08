@@ -12,6 +12,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.Vector;
 import java.util.stream.IntStream;
@@ -87,6 +88,7 @@ public class ClaimListMenu {
         public void populate() {
             inventory.clear();
             int pages = pageClaims.size();
+            if (pages == 0) return;
             page = Math.max(Math.min(page, pages), 1);
             LongArrayList list = pageClaims.get(page);
             ObjectArrayList<ItemStack> items = new ObjectArrayList<>();
@@ -112,8 +114,8 @@ public class ClaimListMenu {
 
         @Override
         public void onClick(InventoryClickEvent event) {
-            if (event.getClickedInventory() == null || event.getClickedInventory().getHolder() != this) return;
             event.setCancelled(true);
+            if (event.getClickedInventory() == null || event.getClickedInventory().getHolder() != this) return;
             if (event.getClickedInventory() != inventory) return;
             if (event.getSlot() < 18) {
                 if (!player.hasPermission("fanaclaim.teleport")) return;
@@ -124,15 +126,12 @@ public class ClaimListMenu {
                 Utils.teleportSafeLocation(player, Utils.middleCornerLocation(claim));
                 return;
             }
-            ConfigItem clicked = menu.next.getSlot() == event.getSlot()
-                                 ? menu.next
-                                 : menu.previous.getSlot() == event.getSlot()
-                                   ? menu.previous
-                                   : null;
+            ItemStack clicked = inventory.getItem(event.getSlot());
             if (clicked == null) return;
-            String identifier = clicked.getIdentifier();
-            if (identifier.equals("next")) next();
-            else if (identifier.equals("previous")) previous();
+            String identifier = clicked.getPersistentDataContainer().get(ConfigItem.IDENTIFIER_KEY, PersistentDataType.STRING);
+            if (identifier == null) return;
+            if (identifier.equals(menu.previous.getIdentifier())) previous();
+            else if (identifier.equals(menu.next.getIdentifier())) next();
         }
     }
 

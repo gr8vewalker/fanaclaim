@@ -1,18 +1,34 @@
 package me.ahmetflix.claim.utils;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import me.ahmetflix.claim.FanaClaim;
 import me.ahmetflix.claim.message.Message;
 import me.ahmetflix.claim.message.Messages;
 import me.ahmetflix.claim.message.PlaceholderedMessage;
 import me.ryanhamshire.GriefPrevention.Claim;
+import net.skinsrestorer.api.SkinsRestorerAPI;
+import net.skinsrestorer.api.model.MojangProfileResponse;
+import net.skinsrestorer.api.model.MojangProfileTextures;
+import net.skinsrestorer.api.property.IProperty;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.projectiles.ProjectileSource;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public class Utils {
 
@@ -50,6 +66,50 @@ public class Utils {
 
     public static void teleportSafeLocation(Player player, Location location) {
         player.teleport(location.getWorld().getHighestBlockAt(location).getLocation().add(0.5, 1.0, 0.5));
+    }
+
+    public static List<UUID> getTrustedPlayers(Claim claim) {
+        List<UUID> trustedPlayers = new ObjectArrayList<>();
+        ArrayList<String> builders = new ArrayList<>();
+        ArrayList<String> containers = new ArrayList<>();
+        ArrayList<String> accessors = new ArrayList<>();
+        ArrayList<String> managers = new ArrayList<>();
+        claim.getPermissions(builders, containers, accessors, managers);
+        permissionsToPlayers(trustedPlayers, builders);
+        permissionsToPlayers(trustedPlayers, containers);
+        permissionsToPlayers(trustedPlayers, accessors);
+        permissionsToPlayers(trustedPlayers, managers);
+        return trustedPlayers;
+    }
+
+    private static void permissionsToPlayers(List<UUID> set, List<String> perms) {
+        perms.stream()
+                .filter(s -> !s.startsWith("[") && !s.equals("public"))
+                .map(UUID::fromString)
+                .filter(uuid -> !set.contains(uuid))
+                .forEach(set::add);
+    }
+
+    public static void setSkullOwner(SkullMeta meta, OfflinePlayer player) {
+        if (!FanaClaim.isSkinsRestorer()) {
+            meta.setOwningPlayer(player);
+            return;
+        }
+        String skin = SkinsRestorerAPI.getApi().getSkinName(player.getName());
+        if (skin == null) {
+            meta.setOwningPlayer(player);
+            return;
+        }
+        IProperty property = SkinsRestorerAPI.getApi().getSkinData(skin);
+        if (property == null) {
+            meta.setOwningPlayer(player);
+            return;
+        }
+        PlayerProfile profile = Bukkit.createProfile(player.getUniqueId(), player.getName());
+        profile.clearProperties();
+        profile.getProperties().removeIf(profileProperty -> profileProperty.getName().equals(IProperty.TEXTURES_NAME));
+        profile.getProperties().add(new ProfileProperty(IProperty.TEXTURES_NAME, property.getValue(), property.getSignature()));
+        meta.setPlayerProfile(profile);
     }
 
     public static void write(File file, String string) {

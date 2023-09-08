@@ -13,6 +13,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
@@ -83,8 +84,13 @@ public class ClaimData {
         this.end = end;
     }
 
-    public void renew(int daysToAdd) {
-        this.end += daysToAdd * 86400000L;
+    public void renew(double daysToAdd) {
+        this.end += (long) (daysToAdd * 86400000L);
+        Bukkit.getScheduler().runTaskAsynchronously(FanaClaim.getInstance(), this::save);
+    }
+
+    public void subtract(double daysToSubtract) {
+        this.end -= (long) (daysToSubtract * 86400000L);
         Bukkit.getScheduler().runTaskAsynchronously(FanaClaim.getInstance(), this::save);
     }
 
@@ -95,26 +101,30 @@ public class ClaimData {
         }
     }
 
-    public void openMenu(Player player, MenuType type) {
+    public void openMenu(Player player, MenuType type, Object... args) {
+        guis.add(player.getUniqueId());
         switch (type) {
             case MAIN_CLAIM:
-                guis.add(player.getUniqueId());
                 FanaClaim.getInstance().getClaimMenu().open(this, player);
                 break;
             case CLAIM_LIST:
-                guis.add(player.getUniqueId());
                 FanaClaim.getInstance().getClaimListMenu().open(player);
                 break;
             case CLAIM_REMOVE:
-                guis.add(player.getUniqueId());
                 FanaClaim.getInstance().getClaimRemoveMenu().open(this, player);
                 break;
             case ADD_TIME:
-                guis.add(player.getUniqueId());
                 FanaClaim.getInstance().getClaimExtendMenu().open(this, player);
                 break;
-            default:
-                return;
+            case CLAIM_SETTINGS:
+                FanaClaim.getInstance().getClaimSettingsMenu().open(this, player);
+                break;
+            case CLAIM_SETTINGS_PLAYERLIST:
+                FanaClaim.getInstance().getClaimSettingsPlayerListMenu().open(this, player);
+                break;
+            case CLAIM_SETTINGS_PLAYER:
+                FanaClaim.getInstance().getClaimSettingsPlayerMenu().open(this, player, (OfflinePlayer) args[0]);
+                break;
         }
     }
 
