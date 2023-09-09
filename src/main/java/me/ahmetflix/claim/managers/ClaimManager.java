@@ -66,6 +66,11 @@ public class ClaimManager {
             Bukkit.getScheduler().runTask(FanaClaim.getInstance(), () -> deleteClaim(claim));
             return;
         }
+        removeData(claim);
+        FanaClaim.getGriefPreventionDataStore().deleteClaim(claim);
+    }
+
+    public void removeData(Claim claim) {
         if (!Settings.REFUND_CLAIM_BLOCKS.getBoolean()) {
             PlayerData playerData = FanaClaim.getGriefPreventionDataStore().getPlayerData(claim.ownerID);
             playerData.setBonusClaimBlocks(playerData.getBonusClaimBlocks() - claim.getArea());
@@ -73,7 +78,6 @@ public class ClaimManager {
         ClaimData claimData = claims.remove(claim.getID().longValue());
         if (claimData != null) {
             claimData.closeInventories();
-            FanaClaim.getGriefPreventionDataStore().deleteClaim(claim);
             claimData.delete();
         }
     }

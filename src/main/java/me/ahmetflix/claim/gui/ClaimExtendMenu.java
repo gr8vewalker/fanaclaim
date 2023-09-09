@@ -1,10 +1,12 @@
 package me.ahmetflix.claim.gui;
 
+import it.unimi.dsi.fastutil.Pair;
 import me.ahmetflix.claim.FanaClaim;
 import me.ahmetflix.claim.data.ClaimData;
 import me.ahmetflix.claim.gui.item.ConfigItem;
 import me.ahmetflix.claim.message.Messages;
 import me.ahmetflix.claim.settings.Settings;
+import me.ahmetflix.claim.utils.Utils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -13,6 +15,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
@@ -142,10 +145,10 @@ public class ClaimExtendMenu {
 
         private static long getMaxMs(Player player) {
             long DAY = 1000 * 60 * 60 * 24;
-            for (Object o : Settings.MAX_CLAIM_DAYS_BY_PERMISSION.getMap().entrySet()) {
-                Map.Entry pair = (Map.Entry) o;
-                if (player.hasPermission((String) pair.getKey())) {
-                    return (int)pair.getValue() * DAY;
+            List<Pair<String, Integer>> claimDaysPermissions = Utils.generatePermissions();
+            for (Pair<String, Integer> claimDaysPermission : claimDaysPermissions) {
+                if (player.hasPermission(claimDaysPermission.first())) {
+                    return claimDaysPermission.second() * DAY;
                 }
             }
             return (int)Settings.MAX_CLAIM_DAYS_BY_PERMISSION.getMap().get("default") * DAY;

@@ -2,20 +2,19 @@ package me.ahmetflix.claim.utils;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
+import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import me.ahmetflix.claim.FanaClaim;
-import me.ahmetflix.claim.message.Message;
 import me.ahmetflix.claim.message.Messages;
 import me.ahmetflix.claim.message.PlaceholderedMessage;
+import me.ahmetflix.claim.settings.Settings;
 import me.ryanhamshire.GriefPrevention.Claim;
 import net.skinsrestorer.api.SkinsRestorerAPI;
-import net.skinsrestorer.api.model.MojangProfileResponse;
-import net.skinsrestorer.api.model.MojangProfileTextures;
 import net.skinsrestorer.api.property.IProperty;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -25,10 +24,8 @@ import org.bukkit.projectiles.ProjectileSource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Utils {
 
@@ -118,5 +115,39 @@ public class Utils {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static List<Pair<String, Integer>> generatePermissions() {
+        List<Pair<String, Integer>> claimDaysPermissions = new ObjectArrayList<>();
+        Settings.MAX_CLAIM_DAYS_BY_PERMISSION.getMap().forEach((key, value) -> {
+            String skey = (String) key;
+            if (skey.equalsIgnoreCase("default")) return;
+            if (value instanceof MemorySection) {
+                claimDaysPermissions.addAll(getPermissions(skey, (MemorySection) value));
+            } else {
+                claimDaysPermissions.add(Pair.of(skey, (Integer) value));
+            }
+        });
+        claimDaysPermissions.sort((o1, o2) -> o2.value() - o1.value());
+        return claimDaysPermissions;
+    }
+
+    private static List<Pair<String, Integer>> getPermissions(String key, MemorySection value) {
+        List<Pair<String, Integer>> permissions = new ObjectArrayList<>();
+        AtomicInteger counter = new AtomicInteger();
+        value.getKeys(false).forEach(s -> {
+            String newKey = key + "." + s;
+            Object o = value.get(s);
+            if (o instanceof MemorySection) {
+                permissions.addAll(getPermissions(newKey, (MemorySection) o));
+            } else {
+                permissions.add(Pair.of(newKey, (Integer) o));
+            }
+            counter.getAndIncrement();
+        });
+        if (counter.get() == 0) {
+            permissions.add(Pair.of(key, (Integer) value.get(key)));
+        }
+        return permissions;
     }
 }

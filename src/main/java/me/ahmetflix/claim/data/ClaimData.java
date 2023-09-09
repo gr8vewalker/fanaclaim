@@ -34,6 +34,7 @@ public class ClaimData {
 
     public ClaimData(long id) {
         this(id, true, true, System.currentTimeMillis() + (Settings.DEFAULT_DAYS.getInt() * 86400000L), new Object2ObjectOpenHashMap<>());
+        save();
     }
 
     public ClaimData(long id, boolean animals, boolean mobs, long end, Object2ObjectOpenHashMap<UUID, Flags> flags) {
