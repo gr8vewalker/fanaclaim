@@ -3,6 +3,7 @@ package me.ahmetflix.claim;
 import me.ahmetflix.claim.command.FanaClaimCommand;
 import me.ahmetflix.claim.command.FanaClaimListCommand;
 import me.ahmetflix.claim.command.ReloadCommand;
+import me.ahmetflix.claim.created.PlayersClaimCreated;
 import me.ahmetflix.claim.data.Flag;
 import me.ahmetflix.claim.gui.*;
 import me.ahmetflix.claim.gui.item.ConfigItem;
@@ -15,6 +16,8 @@ import me.ryanhamshire.GriefPrevention.DataStore;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.economy.Economy;
+import net.skinsrestorer.api.SkinsRestorer;
+import net.skinsrestorer.api.SkinsRestorerProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -38,6 +41,7 @@ public class FanaClaim extends JavaPlugin {
     private static DataStore griefPreventionDataStore;
     private static Economy economy;
     private static boolean skinsRestorer;
+    private static SkinsRestorer skinsRestorerInstance;
 
     public static FanaClaim getInstance() {
         return instance;
@@ -53,6 +57,13 @@ public class FanaClaim extends JavaPlugin {
 
     public static boolean isSkinsRestorer() {
         return skinsRestorer;
+    }
+
+    public static SkinsRestorer getSkinsRestorer() {
+        if (skinsRestorerInstance == null) {
+            skinsRestorerInstance = SkinsRestorerProvider.get();
+        }
+        return skinsRestorerInstance;
     }
 
     private ClaimManager claimManager;
@@ -96,6 +107,12 @@ public class FanaClaim extends JavaPlugin {
         return claimSettingsPlayerMenu;
     }
 
+    private PlayersClaimCreated playersClaimCreated;
+
+    public PlayersClaimCreated getPlayersClaimCreated() {
+        return playersClaimCreated;
+    }
+
     @Override
     public void onLoad() {
         instance = this;
@@ -137,12 +154,15 @@ public class FanaClaim extends JavaPlugin {
         getCommand("reloadfanaclaim").setExecutor(new ReloadCommand());
         getCommand("fanaclaim").setExecutor(new FanaClaimCommand());
         getCommand("fanaclaimlist").setExecutor(new FanaClaimListCommand());
+        playersClaimCreated = new PlayersClaimCreated();
+        playersClaimCreated.init();
         skinsRestorer = pluginManager.isPluginEnabled("SkinsRestorer");
     }
 
     @Override
     public void onDisable() {
         claimManager.save();
+        playersClaimCreated.save();
     }
 
     @Override
@@ -167,6 +187,7 @@ public class FanaClaim extends JavaPlugin {
                 MiniMessage.miniMessage().deserialize(guiClaimListMenu.getString("title", "Claim List")),
                 guiClaimListMenu.getObject("PREVIOUS", ConfigItem.class),
                 guiClaimListMenu.getObject("NEXT", ConfigItem.class),
+                guiClaimListMenu.getObject("CREATE_NEW", ConfigItem.class),
                 guiClaimListMenu.getObject("CLAIM", ConfigItem.ItemInfo.class)
         );
         claimRemoveMenu = new ClaimRemoveMenu(
@@ -190,6 +211,8 @@ public class FanaClaim extends JavaPlugin {
                 guiClaimSettingsMenu.getObject("ANIMALS_DISABLED", ConfigItem.class),
                 guiClaimSettingsMenu.getObject("MONSTERS_ENABLED", ConfigItem.class),
                 guiClaimSettingsMenu.getObject("MONSTERS_DISABLED", ConfigItem.class),
+                guiClaimSettingsMenu.getObject("PVP_ENABLED", ConfigItem.class),
+                guiClaimSettingsMenu.getObject("PVP_DISABLED", ConfigItem.class),
                 guiClaimSettingsMenu.getObject("MEMBERS", ConfigItem.class),
                 guiClaimSettingsMenu.getObject("FILLER", ConfigItem.ItemInfo.class)
         );

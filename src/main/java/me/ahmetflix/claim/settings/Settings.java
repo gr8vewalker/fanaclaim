@@ -12,8 +12,10 @@ public enum Settings {
     REFUND_CLAIM_BLOCKS(true),
     CUSTOM_WORLD_NAMES(Maps.newHashMap()),
     MAX_CLAIM_DAYS_BY_PERMISSION(Maps.newHashMap()),
-    EXTEND_TIME_PRICE(250),
+    EXTEND_TIME_PRICE(250.0D),
     DEFAULT_DAYS(30),
+    PENALTY_DIVISOR(4.0D),
+    DELETE_PENALTY(4.0D),
     SETHOME_COMMANDS(Arrays.asList("sethome", "esethome", "createhome", "ecreatehome"));
 
     private final Object defaultValue;
@@ -44,6 +46,10 @@ public enum Settings {
         return (int) value;
     }
 
+    public double getDouble() {
+        return value instanceof Integer ? (int) value : (double) value;
+    }
+
     public <T> List<T> getList(Class<T> clazz) {
         return (List<T>) value;
     }
@@ -61,6 +67,8 @@ public enum Settings {
                 setting.setValue(settings.getConfigurationSection(setting.name()).getValues(false));
             } else if (defaultVal instanceof Integer) {
                 setting.setValue(settings.getInt(setting.name(), (Integer) defaultVal));
+            } else if (defaultVal instanceof Double) {
+                setting.setValue(settings.getDouble(setting.name(), (Double) defaultVal));
             } else if (defaultVal instanceof List) {
                 setting.setValue(settings.getList(setting.name()));
             }

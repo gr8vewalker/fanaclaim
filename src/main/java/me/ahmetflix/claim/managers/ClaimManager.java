@@ -44,6 +44,7 @@ public class ClaimManager {
                         }
                         claims.put(data.getId(), data);
                     } catch (Exception e) {
+                        Bukkit.getLogger().warning("Cannot read data for " + name);
                         e.printStackTrace();
                     }
                 }

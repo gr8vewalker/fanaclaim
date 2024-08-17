@@ -1,6 +1,7 @@
 package me.ahmetflix.claim.task;
 
 import me.ahmetflix.claim.FanaClaim;
+import me.ahmetflix.claim.listener.ClaimDeleteListener;
 import me.ahmetflix.claim.message.Messages;
 import me.ahmetflix.claim.settings.Settings;
 import me.ryanhamshire.GriefPrevention.DataStore;
@@ -27,6 +28,7 @@ public class ClaimExpireRunnable extends BukkitRunnable {
                             .with("y", String.valueOf(loc.getY()))
                             .with("z", String.valueOf(loc.getZ()))
                             .broadcast();
+                    ClaimDeleteListener.deletedByBalance.add(claim.getID().longValue());
                     FanaClaim.getInstance().getClaimManager().deleteClaim(claim);
                 });
     }

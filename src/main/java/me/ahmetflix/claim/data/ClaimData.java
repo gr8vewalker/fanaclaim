@@ -1,5 +1,6 @@
 package me.ahmetflix.claim.data;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -26,21 +27,24 @@ public class ClaimData {
     private final long id;
     private boolean animals;
     private boolean mobs;
+    private boolean pvp;
     private long end;
-    private int area;
+    private int area = 0;
     private final Object2ObjectOpenHashMap<UUID, Flags> flags = new Object2ObjectOpenHashMap<>();
 
     private final ObjectOpenHashSet<UUID> guis = new ObjectOpenHashSet<>();
 
     public ClaimData(long id) {
-        this(id, true, true, System.currentTimeMillis() + (Settings.DEFAULT_DAYS.getInt() * 86400000L), new Object2ObjectOpenHashMap<>());
+        this(id, true, true, false, System.currentTimeMillis() + (Settings.DEFAULT_DAYS.getInt() * 86400000L), new Object2ObjectOpenHashMap<>());
         save();
+        FanaClaim.getInstance().getPlayersClaimCreated().addCreated(FanaClaim.getGriefPreventionDataStore().getClaim(id).ownerID);
     }
 
-    public ClaimData(long id, boolean animals, boolean mobs, long end, Object2ObjectOpenHashMap<UUID, Flags> flags) {
+    public ClaimData(long id, boolean animals, boolean mobs, boolean pvp, long end, Object2ObjectOpenHashMap<UUID, Flags> flags) {
         this.id = id;
         this.animals = animals;
         this.mobs = mobs;
+        this.pvp = pvp;
         this.end = end;
         this.flags.putAll(flags);
     }
@@ -55,6 +59,10 @@ public class ClaimData {
 
     public boolean isMobs() {
         return mobs;
+    }
+
+    public boolean isPvp() {
+        return pvp;
     }
 
     public long getEnd() {
@@ -81,6 +89,10 @@ public class ClaimData {
         this.mobs = mobs;
     }
 
+    public void setPvp(boolean pvp) {
+        this.pvp = pvp;
+    }
+
     public void setEnd(long end) {
         this.end = end;
     }
@@ -95,8 +107,30 @@ public class ClaimData {
         Bukkit.getScheduler().runTaskAsynchronously(FanaClaim.getInstance(), this::save);
     }
 
+    public boolean couldModify(int area) {
+        if (this.area == 0) getArea();
+        if (area <= this.area) return true;
+        else {
+            double penaltyDivisor = Settings.PENALTY_DIVISOR.getDouble();
+            if (penaltyDivisor == 0) return true;
+            double percantageGrow = (area - this.area) / (double) this.area;
+            double timePenalty = percantageGrow / penaltyDivisor;
+            long timeLeft = end - System.currentTimeMillis();
+            long newLeft = (long) (timeLeft * (1 - timePenalty));
+            return end + newLeft > System.currentTimeMillis();
+        }
+    }
+
     public void modify(int area) {
         if (area > this.area) {
+            double penaltyDivisor = Settings.PENALTY_DIVISOR.getDouble();
+            if (this.area != 0 && penaltyDivisor != 0) {
+                double percantageGrow = Math.abs((area - this.area) / (double) this.area);
+                double timePenalty = percantageGrow / penaltyDivisor;
+                long timeLeft = end - System.currentTimeMillis();
+                long newLeft = (long) (timeLeft * (1 - timePenalty));
+                this.end = System.currentTimeMillis() + newLeft;
+            }
             this.area = area;
             Bukkit.getScheduler().runTaskAsynchronously(FanaClaim.getInstance(), this::save);
         }
@@ -163,6 +197,7 @@ public class ClaimData {
         object.addProperty("id", id);
         object.addProperty("animals", animals);
         object.addProperty("mobs", mobs);
+        object.addProperty("pvp", pvp);
         object.addProperty("end", end);
         object.addProperty("area", area);
         JsonObject flagsObject = new JsonObject();
@@ -196,6 +231,8 @@ public class ClaimData {
         long id = object.get("id").getAsLong();
         boolean animals = object.get("animals").getAsBoolean();
         boolean mobs = object.get("mobs").getAsBoolean();
+        JsonElement pvpWrapper = object.get("pvp");
+        boolean pvp = pvpWrapper != null && pvpWrapper.getAsBoolean();
         long end = object.get("end").getAsLong();
         int area = object.get("area").getAsInt();
         Object2ObjectOpenHashMap<UUID, Flags> flags = new Object2ObjectOpenHashMap<>();
@@ -207,7 +244,7 @@ public class ClaimData {
             flagObject.entrySet().forEach(flagEntry -> flag.setFlag(Flag.valueOf(flagEntry.getKey()), flagEntry.getValue().getAsBoolean()));
             flags.put(uuid, flag);
         });
-        ClaimData claimData = new ClaimData(id, animals, mobs, end, flags);
+        ClaimData claimData = new ClaimData(id, animals, mobs, pvp, end, flags);
         claimData.modify(area);
         return claimData;
     }

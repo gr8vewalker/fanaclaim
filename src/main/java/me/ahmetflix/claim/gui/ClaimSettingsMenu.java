@@ -20,16 +20,20 @@ public class ClaimSettingsMenu {
     private final ConfigItem animalDisabled;
     private final ConfigItem monsterEnabled;
     private final ConfigItem monsterDisabled;
+    private final ConfigItem pvpEnabled;
+    private final ConfigItem pvpDisabled;
     private final ConfigItem members;
     private final ConfigItem.ItemInfo filler;
 
-    public ClaimSettingsMenu(Component title, ConfigItem back, ConfigItem animalEnabled, ConfigItem animalDisabled, ConfigItem monsterEnabled, ConfigItem monsterDisabled, ConfigItem members, ConfigItem.ItemInfo filler) {
+    public ClaimSettingsMenu(Component title, ConfigItem back, ConfigItem animalEnabled, ConfigItem animalDisabled, ConfigItem monsterEnabled, ConfigItem monsterDisabled, ConfigItem pvpEnabled, ConfigItem pvpDisabled, ConfigItem members, ConfigItem.ItemInfo filler) {
         this.title = title;
         this.back = back;
         this.animalEnabled = animalEnabled;
         this.animalDisabled = animalDisabled;
         this.monsterEnabled = monsterEnabled;
         this.monsterDisabled = monsterDisabled;
+        this.pvpEnabled = pvpEnabled;
+        this.pvpDisabled = pvpDisabled;
         this.members = members;
         this.filler = filler;
     }
@@ -56,6 +60,14 @@ public class ClaimSettingsMenu {
 
     public ConfigItem getMonsterDisabled() {
         return monsterDisabled;
+    }
+
+    public ConfigItem getPvpEnabled() {
+        return pvpEnabled;
+    }
+
+    public ConfigItem getPvpDisabled() {
+        return pvpDisabled;
     }
 
     public ConfigItem getMembers() {
@@ -91,6 +103,7 @@ public class ClaimSettingsMenu {
             this.menu.members.addToInventory(data, inventory);
             (data.isMobs() ? this.menu.monsterEnabled : this.menu.monsterDisabled).addToInventory(data, inventory);
             (data.isAnimals() ? this.menu.animalEnabled : this.menu.animalDisabled).addToInventory(data, inventory);
+            (data.isPvp() ? this.menu.pvpEnabled : this.menu.pvpDisabled).addToInventory(data, inventory);
         }
 
         @Override
@@ -119,6 +132,12 @@ public class ClaimSettingsMenu {
                     data.openMenu(player, MenuType.CLAIM_SETTINGS);
                 } else if (identifier.equals(menu.animalDisabled.getIdentifier())) {
                     data.setAnimals(true);
+                    data.openMenu(player, MenuType.CLAIM_SETTINGS);
+                } else if (identifier.equals(menu.pvpEnabled.getIdentifier())) {
+                    data.setPvp(false);
+                    data.openMenu(player, MenuType.CLAIM_SETTINGS);
+                } else if (identifier.equals(menu.pvpDisabled.getIdentifier())) {
+                    data.setPvp(true);
                     data.openMenu(player, MenuType.CLAIM_SETTINGS);
                 }
             }

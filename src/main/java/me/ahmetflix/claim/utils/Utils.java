@@ -9,8 +9,9 @@ import me.ahmetflix.claim.message.Messages;
 import me.ahmetflix.claim.message.PlaceholderedMessage;
 import me.ahmetflix.claim.settings.Settings;
 import me.ryanhamshire.GriefPrevention.Claim;
-import net.skinsrestorer.api.SkinsRestorerAPI;
-import net.skinsrestorer.api.property.IProperty;
+import net.skinsrestorer.api.SkinsRestorer;
+import net.skinsrestorer.api.property.SkinProperty;
+import net.skinsrestorer.api.storage.PlayerStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -24,7 +25,10 @@ import org.bukkit.projectiles.ProjectileSource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Utils {
@@ -32,7 +36,7 @@ public class Utils {
     public static double calculateArea(Claim claim) {
         Location min = claim.getLesserBoundaryCorner();
         Location max = claim.getGreaterBoundaryCorner();
-        return Math.abs((max.getX() - min.getX()) * (max.getZ() - min.getZ()));
+        return Math.abs((max.getX() - min.getX() + 1) * (max.getZ() - min.getZ() + 1));
     }
 
     public static PlaceholderedMessage convertToMessage(long ms) {
@@ -59,6 +63,16 @@ public class Utils {
 
     public static Location middleCornerLocation(Claim claim) {
         return new Location(claim.getLesserBoundaryCorner().getWorld(), (claim.getLesserBoundaryCorner().getX() + claim.getGreaterBoundaryCorner().getX()) / 2.0, (claim.getLesserBoundaryCorner().getY() + claim.getGreaterBoundaryCorner().getY()) / 2.0, (claim.getLesserBoundaryCorner().getZ() + claim.getGreaterBoundaryCorner().getZ()) / 2.0);
+    }
+
+    public static void teleportSafeLocationNoMove(Player player, Location location, long delay) {
+        if (player.isOp())
+            Utils.teleportSafeLocation(player, location);
+        Location current = player.getLocation().clone();
+        Bukkit.getScheduler().runTaskLater(FanaClaim.getInstance(), () -> {
+            if (player.getLocation().equals(current))
+                Utils.teleportSafeLocation(player, location);
+        }, delay);
     }
 
     public static void teleportSafeLocation(Player player, Location location) {
@@ -88,25 +102,28 @@ public class Utils {
     }
 
     public static void setSkullOwner(SkullMeta meta, OfflinePlayer player) {
-        if (!FanaClaim.isSkinsRestorer()) {
-            meta.setOwningPlayer(player);
-            return;
-        }
-        String skin = SkinsRestorerAPI.getApi().getSkinName(player.getName());
-        if (skin == null) {
-            meta.setOwningPlayer(player);
-            return;
-        }
-        IProperty property = SkinsRestorerAPI.getApi().getSkinData(skin);
-        if (property == null) {
-            meta.setOwningPlayer(player);
+        meta.setOwningPlayer(player);
+        /*
+        SkinsRestorer sr = FanaClaim.getSkinsRestorer();
+        PlayerStorage storage = sr.getPlayerStorage();
+        SkinProperty skin;
+        try {
+            Optional<SkinProperty> skinOpt = storage.getSkinForPlayer(player.getUniqueId(), player.getName());
+            if (!skinOpt.isPresent()) {
+                //meta.setOwningPlayer(player);
+                return;
+            }
+            skin = skinOpt.get();
+        } catch (Exception e) {
+            //meta.setOwningPlayer(player);
             return;
         }
         PlayerProfile profile = Bukkit.createProfile(player.getUniqueId(), player.getName());
         profile.clearProperties();
-        profile.getProperties().removeIf(profileProperty -> profileProperty.getName().equals(IProperty.TEXTURES_NAME));
-        profile.getProperties().add(new ProfileProperty(IProperty.TEXTURES_NAME, property.getValue(), property.getSignature()));
+        profile.getProperties().removeIf(profileProperty -> profileProperty.getName().equals(SkinProperty.TEXTURES_NAME));
+        profile.getProperties().add(new ProfileProperty(SkinProperty.TEXTURES_NAME, skin.getValue(), skin.getSignature()));
         meta.setPlayerProfile(profile);
+         */
     }
 
     public static void write(File file, String string) {

@@ -7,8 +7,11 @@ import me.ahmetflix.claim.FanaClaim;
 import me.ahmetflix.claim.gui.item.ConfigItem;
 import me.ahmetflix.claim.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Claim;
+import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import me.ryanhamshire.GriefPrevention.PlayerData;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -22,12 +25,14 @@ public class ClaimListMenu {
     private final Component title;
     private final ConfigItem previous;
     private final ConfigItem next;
+    private final ConfigItem createNew;
     private final ConfigItem.ItemInfo claimItem;
 
-    public ClaimListMenu(Component title, ConfigItem previous, ConfigItem next, ConfigItem.ItemInfo claimItem) {
+    public ClaimListMenu(Component title, ConfigItem previous, ConfigItem next, ConfigItem createNew, ConfigItem.ItemInfo claimItem) {
         this.title = title;
         this.previous = previous;
         this.next = next;
+        this.createNew = createNew;
         this.claimItem = claimItem;
     }
 
@@ -43,6 +48,10 @@ public class ClaimListMenu {
         return next;
     }
 
+    public ConfigItem getCreateNew() {
+        return createNew;
+    }
+
     public ConfigItem.ItemInfo getClaimItem() {
         return claimItem;
     }
@@ -52,15 +61,26 @@ public class ClaimListMenu {
         player.openInventory(gui.getInventory());
     }
 
+    public void openCreation(Player player) {
+        ClaimListMenuGui gui = new ClaimListMenuGui(this, player, true);
+        player.openInventory(gui.getInventory());
+    }
+
     public static class ClaimListMenuGui extends MenuGui {
 
         private final ClaimListMenu menu;
         private int page = 1;
         private final Int2ObjectArrayMap<LongArrayList> pageClaims = new Int2ObjectArrayMap<>();
+        private final boolean addCreateNew;
 
         public ClaimListMenuGui(ClaimListMenu menu, Player player) {
+            this(menu, player, false);
+        }
+
+        public ClaimListMenuGui(ClaimListMenu menu, Player player, boolean addCreateNew) {
             super(player, 27, menu.getTitle());
             this.menu = menu;
+            this.addCreateNew = addCreateNew;
             // 18 claim per page
             PlayerData playerData = FanaClaim.getGriefPreventionDataStore().getPlayerData(player.getUniqueId());
             Vector<Claim> claims = playerData.getClaims();
@@ -87,6 +107,9 @@ public class ClaimListMenu {
 
         public void populate() {
             inventory.clear();
+            if (addCreateNew) {
+                this.menu.createNew.addToInventory(inventory);
+            }
             int pages = pageClaims.size();
             if (pages == 0) return;
             page = Math.max(Math.min(page, pages), 1);
@@ -123,7 +146,7 @@ public class ClaimListMenu {
                 int slot = event.getSlot();
                 long claimID = pageClaims.get(page).getLong(slot);
                 Claim claim = FanaClaim.getGriefPreventionDataStore().getClaim(claimID);
-                Utils.teleportSafeLocation(player, Utils.middleCornerLocation(claim));
+                Utils.teleportSafeLocationNoMove(player, Utils.middleCornerLocation(claim), 20 * 3L);
                 return;
             }
             ItemStack clicked = inventory.getItem(event.getSlot());
@@ -132,6 +155,10 @@ public class ClaimListMenu {
             if (identifier == null) return;
             if (identifier.equals(menu.previous.getIdentifier())) previous();
             else if (identifier.equals(menu.next.getIdentifier())) next();
+            else if (identifier.equals(menu.createNew.getIdentifier())) {
+                player.closeInventory();
+                GriefPrevention.getPlugin(GriefPrevention.class).onCommand(player, Bukkit.getPluginCommand("claim"), "claim", new String[0]);
+            }
         }
     }
 

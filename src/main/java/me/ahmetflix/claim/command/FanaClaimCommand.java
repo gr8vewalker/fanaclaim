@@ -3,6 +3,7 @@ package me.ahmetflix.claim.command;
 import me.ahmetflix.claim.FanaClaim;
 import me.ahmetflix.claim.data.ClaimData;
 import me.ahmetflix.claim.gui.MenuType;
+import me.ahmetflix.claim.listener.ClaimDeleteListener;
 import me.ahmetflix.claim.message.Messages;
 import me.ryanhamshire.GriefPrevention.Claim;
 import org.bukkit.command.Command;
@@ -21,7 +22,14 @@ public class FanaClaimCommand implements CommandExecutor {
             if (arg.equalsIgnoreCase("delete")) {
                 // oyuncunun üstünde bulunduğu claimi siler
                 Claim claim = FanaClaim.getGriefPreventionDataStore().getClaimAt(player.getLocation(), false, null);
+                ClaimDeleteListener.deletedByBalance.add(claim.getID().longValue());
                 FanaClaim.getInstance().getClaimManager().deleteClaim(claim);
+                return true;
+            }
+            if (arg.equalsIgnoreCase("end")) {
+                // oyuncunun üstünde bulunduğu claimin süresini bitirir
+                Claim claim = FanaClaim.getGriefPreventionDataStore().getClaimAt(player.getLocation(), false, null);
+                FanaClaim.getInstance().getClaimManager().getClaim(claim.getID()).setEnd(System.currentTimeMillis());
                 return true;
             }
             if (args.length > 1) {

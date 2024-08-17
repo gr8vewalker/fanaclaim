@@ -11,6 +11,19 @@ settings:
   EXTEND_TIME_PRICE: 50
   # yeni açılan claimin ilk sahip olduğu claim sayısı
   DEFAULT_DAYS: 30
+  # formül: yeni kalan süre = (1 - (claimin ne kadar büyüdüğü/PENALTY_DIVISOR)) * eski kalan süre
+  # örnek:
+  # 64 alanlık bir claimi 80 alana çıkarttığımız bir durumda
+  # claim (80-64)/64 yani 0,25(%25) kadar büyümüş olur
+  # bunu PENALTY_DIVISOR (varsayılan olarak 4) e böldüğümüz zaman 0,25/4 = 0,0625(%6,25) e ulaşırız
+  # kısacası süreden kesilecek miktar %6,25 olur
+  # eğer 30 günlük bir claim ise bu durumda (1-0,0625)*30 = 28,125 yani 28 gün 3 saat 45 dakika 36 saniye kalır
+  PENALTY_DIVISOR: 4
+  # formül: claim silme ücreti = claim alanı * DELETE_PENALTY
+  # örnek:
+  # 10a 10luk bir claimi siler isek (DELETE_PENALTY = 4)
+  # 100 * 4 = 400
+  DELETE_PENALTY: 4
   SETHOME_COMMANDS: ["sethome", "esethome", "createhome", "ecreatehome"]
 gui:
   claim-menu:
@@ -104,6 +117,16 @@ gui:
         material: ARROW
         name: "<color:#e8e850>İleri"
         lore: []
+    CREATE_NEW:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 22
+      update: false
+      identifier: create-new
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: DIRT
+        name: "<color:#e8e850>Yeni Claim Oluştur"
+        lore: []
   claim-remove:
     title: "<gray>Claim Sil"
     FILLER: *filler
@@ -129,6 +152,7 @@ gui:
         lore:
           - ""
           - "  <color:#f3f3a0>Claimini kaldırmaya emin misin?"
+          - "  <color:#f3f3a0>Bu sana <color:#e8e850><bold><price> <color:#f3f3a0>paraya mal olacak!"
           - "<color:#f3f3a0>Onaylamak için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
   claim-time:
     title: "<gray>Claim Süresi Uzatma"
@@ -172,7 +196,7 @@ gui:
     BACK: *back
     ANIMALS_ENABLED:
       ==: me.ahmetflix.claim.gui.item.ConfigItem
-      slot: 11
+      slot: 10
       update: false
       identifier: animals-enabled
       item:
@@ -184,7 +208,7 @@ gui:
           - "<color:#f3f3a0>Kapatmak için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
     ANIMALS_DISABLED:
       ==: me.ahmetflix.claim.gui.item.ConfigItem
-      slot: 11
+      slot: 10
       update: false
       identifier: animals-disabled
       item:
@@ -196,7 +220,7 @@ gui:
           - "<color:#f3f3a0>Açmak için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
     MONSTERS_ENABLED:
       ==: me.ahmetflix.claim.gui.item.ConfigItem
-      slot: 13
+      slot: 12
       update: false
       identifier: monters-enabled
       item:
@@ -208,7 +232,7 @@ gui:
           - "<color:#f3f3a0>Kapatmak için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
     MONSTERS_DISABLED:
       ==: me.ahmetflix.claim.gui.item.ConfigItem
-      slot: 13
+      slot: 12
       update: false
       identifier: monsters-disabled
       item:
@@ -218,9 +242,33 @@ gui:
         lore:
           - ""
           - "<color:#f3f3a0>Açmak için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
+    PVP_ENABLED:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 14
+      update: false
+      identifier: pvp-enabled
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: BLAZE_SPAWN_EGG
+        name: '<color:#f3f3a0>PVP: <color:#58D68D>✔'
+        lore:
+          - ""
+          - "<color:#f3f3a0>Kapatmak için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
+    PVP_DISABLED:
+      ==: me.ahmetflix.claim.gui.item.ConfigItem
+      slot: 14
+      update: false
+      identifier: pvp-disabled
+      item:
+        ==: me.ahmetflix.claim.gui.item.ConfigItem$ItemInfo
+        material: ENDERMAN_SPAWN_EGG
+        name: '<color:#f3f3a0>PVP: <color:#EC7063>✘'
+        lore:
+          - ""
+          - "<color:#f3f3a0>Açmak için <color:#e8e850><u>tıkla</u><color:#f3f3a0>!"
     MEMBERS:
       ==: me.ahmetflix.claim.gui.item.ConfigItem
-      slot: 15
+      slot: 16
       update: false
       identifier: members
       item:

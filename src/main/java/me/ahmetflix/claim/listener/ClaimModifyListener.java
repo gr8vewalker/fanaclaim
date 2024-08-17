@@ -15,7 +15,10 @@ public class ClaimModifyListener implements Listener {
         ClaimData claimData = FanaClaim.getInstance().getClaimManager().getClaim(event.getTo().getID());
         if (claimData != null) {
             Claim claim = event.getTo();
-            claimData.modify((int) Utils.calculateArea(claim));
+            int area = (int) Utils.calculateArea(claim);
+            if (claimData.couldModify(area)) {
+                claimData.modify(area);
+            } else event.setCancelled(true);
         }
     }
 

@@ -122,6 +122,7 @@ public class ClaimSettingsPlayerMenu {
             if (clicked == null) return;
             String identifier = clicked.getPersistentDataContainer().get(ConfigItem.IDENTIFIER_KEY, PersistentDataType.STRING);
             if (identifier == null) return;
+            if (identifier.equals(menu.player.getIdentifier())) return;
             if (identifier.equals(menu.back.getIdentifier())) data.openMenu(player, MenuType.CLAIM_SETTINGS_PLAYERLIST);
             else {
                 Flag flag = Flag.valueOf(identifier);

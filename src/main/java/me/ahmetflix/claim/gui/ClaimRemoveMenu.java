@@ -3,8 +3,12 @@ package me.ahmetflix.claim.gui;
 import me.ahmetflix.claim.FanaClaim;
 import me.ahmetflix.claim.data.ClaimData;
 import me.ahmetflix.claim.gui.item.ConfigItem;
+import me.ahmetflix.claim.listener.ClaimDeleteListener;
 import me.ahmetflix.claim.message.Messages;
+import me.ahmetflix.claim.settings.Settings;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -51,13 +55,16 @@ public class ClaimRemoveMenu {
 
         private final ClaimRemoveMenu menu;
         private final ClaimData data;
+        private final int price;
 
         public ClaimRemoveMenuGui(ClaimRemoveMenu menu, ClaimData data, Player player) {
             super(player, 27, menu.getTitle());
             this.menu = menu;
             this.data = data;
+            this.price = (int) (data.getArea() * Settings.DELETE_PENALTY.getDouble());
             this.menu.back.addToInventory(data, inventory);
-            this.menu.verifyRemoval.addToInventory(data, inventory);
+            this.menu.verifyRemoval.addToInventory(inventory,
+                                                   TagResolver.resolver("price", Tag.preProcessParsed(String.valueOf(price))));
             ItemStack filler = menu.getFiller().toItemStack(data);
             IntStream.range(0, inventory.getSize())
                     .filter(i -> inventory.getItem(i) == null)
@@ -94,8 +101,17 @@ public class ClaimRemoveMenu {
                 if (identifier.equals(menu.back.getIdentifier())) {
                     data.openMenu(player, MenuType.MAIN_CLAIM);
                 } else if (identifier.equals(menu.verifyRemoval.getIdentifier())) {
+                    if (!FanaClaim.getEconomy().has(player, price)) {
+                        Messages.NOT_ENOUGH_MONEY.send(player);
+                        return;
+                    }
+                    if (!FanaClaim.getEconomy().withdrawPlayer(player, price).transactionSuccess()) {
+                        Messages.INTERNAL_ERROR.send(player);
+                        return;
+                    }
                     player.closeInventory();
                     Messages.CLAIM_DELETED.send(player);
+                    ClaimDeleteListener.deletedByBalance.add(data.getGriefPreventionClaim().getID().longValue());
                     FanaClaim.getInstance().getClaimManager().deleteClaim(data.getGriefPreventionClaim());
                 }
             }
