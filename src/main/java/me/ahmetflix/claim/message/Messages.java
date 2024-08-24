@@ -18,6 +18,7 @@ public class Messages {
     public static final Message CLAIM_END = new Message("<player> adlı oyuncunun <world> <x> <y> <z> koordinatlarındaki claimi bitti!");
     public static final Message CLAIM_DELETED = new Message("<red>Claimin silindi!");
     public static final Message CLAIM_EXTENDED = new Message("<green>Claimin süresi uzatıldı!");
+    public static final Message CLAIM_TELEPORTING = new Message("<green>Claimine 3 saniye içinde ışınlanacaksın.");
     public static final Message PLAYER_ADDED = new Message("<green><player> adlı oyuncuyu claimine ekledin.");
     public static final Message PLAYER_REMOVED = new Message("<red><player> adlı oyuncuyu claiminden çıkardın.");
 
@@ -31,6 +32,7 @@ public class Messages {
     public static final Message NOT_OWNER = new Message("<red>Bu claimin sahibi değilsin!");
     public static final Message NO_CLAIM = new Message("<red>Bu bölgede bir claim yok!");
     public static final Message NOT_ENOUGH_MONEY = new Message("<red>Yeterli bakiyen yok!");
+    public static final Message TELEPORT_CANCELLED = new Message("<red>Hareket ettiğin için ışınlanma iptal edildi!");
 
     public static final Message PLAYER_NOT_FOUND = new Message("<red>Böyle bir oyuncu bulunamadı.");
     public static final Message PROVIDE_PLAYER = new Message("<red>Lütfen bir oyuncu ismi gir.");

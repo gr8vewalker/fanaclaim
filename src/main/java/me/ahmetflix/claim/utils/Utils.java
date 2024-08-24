@@ -66,12 +66,20 @@ public class Utils {
     }
 
     public static void teleportSafeLocationNoMove(Player player, Location location, long delay) {
-        if (player.isOp())
+        if (player.isOp()) {
             Utils.teleportSafeLocation(player, location);
+			return;
+		}
         Location current = player.getLocation().clone();
         Bukkit.getScheduler().runTaskLater(FanaClaim.getInstance(), () -> {
-            if (player.getLocation().equals(current))
+			Location playerLocation = player.getLocation();
+            if (playerLocation.getWorld() == current.getWorld() && 
+					playerLocation.getX() == current.getX() && 
+					playerLocation.getY() == current.getY() && 
+					playerLocation.getZ() == current.getZ())
                 Utils.teleportSafeLocation(player, location);
+            else
+                Messages.TELEPORT_CANCELLED.send(player);
         }, delay);
     }
 

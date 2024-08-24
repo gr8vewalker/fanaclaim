@@ -11,10 +11,13 @@ import me.ahmetflix.claim.settings.Settings;
 import me.ahmetflix.claim.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.ClaimPermission;
+import me.ryanhamshire.GriefPrevention.events.TrustChangedEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
@@ -39,7 +42,9 @@ import java.util.UUID;
 
 public class ClaimListener implements Listener {
 
-    @EventHandler(priority= EventPriority.HIGH, ignoreCancelled=true)
+    private Object2LongArrayMap<UUID> physicalWarnings = new Object2LongArrayMap<>();
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBreak(BlockBreakEvent event) {
         if (event.getPlayer().isOp()) return;
         Claim claim = FanaClaim.getGriefPreventionDataStore().getClaimAt(event.getBlock().getLocation(), false, null);
@@ -83,7 +88,28 @@ public class ClaimListener implements Listener {
         event.setCancelled(true);
     }
 
-    @EventHandler(priority=EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onTrustCommand(TrustChangedEvent event) {
+        if (!event.isGiven()) return;
+        if (event.getClaimPermission() != null && event.getClaimPermission() != ClaimPermission.Build) return;
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(event.getIdentifier());
+        } catch (IllegalArgumentException e) {
+            return;
+        }
+
+        Player player = Bukkit.getPlayer(uuid);
+        event.getClaims().stream().findFirst().ifPresent(claim -> {
+            ClaimData claimData = FanaClaim.getInstance().getClaimManager().getClaim(claim.getID());
+            if (claimData == null) {
+                claimData = FanaClaim.getInstance().getClaimManager().addClaim(claim.getID());
+            }
+            FanaClaim.getInstance().getClaimSettingsPlayerMenu().open(claimData, event.getChanger(), player);
+        });
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onClaimCommand(PlayerCommandPreprocessEvent event) {
         String msg = event.getMessage();
         String[] partitions = msg.split(" ");
@@ -119,8 +145,8 @@ public class ClaimListener implements Listener {
                         FanaClaim.getGriefPreventionDataStore().saveClaim(claim);
                         FanaClaim.getInstance().getClaimSettingsPlayerMenu().open(claimData, player, playerToAdd);
                         Messages.PLAYER_ADDED
-                                .with("player", playerToAdd.getName())
-                                .send(player);
+                            .with("player", playerToAdd.getName())
+                            .send(player);
                     } else {
                         Messages.PROVIDE_PLAYER.send(player);
                     }
@@ -140,8 +166,8 @@ public class ClaimListener implements Listener {
                         Flags flags = claimData.getFlags(playerToRemove.getUniqueId());
                         Arrays.stream(Flag.values()).forEach(flag -> flags.setFlag(flag, false));
                         Messages.PLAYER_REMOVED
-                                .with("player", playerToRemove.getName())
-                                .send(player);
+                            .with("player", playerToRemove.getName())
+                            .send(player);
                     } else {
                         Messages.PROVIDE_PLAYER.send(player);
                     }
@@ -151,12 +177,12 @@ public class ClaimListener implements Listener {
         claimData.openMenu(player, MenuType.MAIN_CLAIM);
     }
 
-    @EventHandler(priority=EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onSethome(PlayerCommandPreprocessEvent event) {
         String msg = event.getMessage();
         String command = msg.split(" ")[0].substring(1);
         boolean isSethome = Settings.SETHOME_COMMANDS.getList(String.class).stream()
-                .anyMatch(cmd -> cmd.equalsIgnoreCase(command));
+            .anyMatch(cmd -> cmd.equalsIgnoreCase(command));
         if (!isSethome) return;
         Player player = event.getPlayer();
         Claim claim = FanaClaim.getGriefPreventionDataStore().getClaimAt(player.getLocation(), false, null);
@@ -201,7 +227,7 @@ public class ClaimListener implements Listener {
         }
     }
 
-    @EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlace(BlockPlaceEvent event) {
         if (event.getPlayer().isOp()) return;
         Claim claim = FanaClaim.getGriefPreventionDataStore().getClaimAt(event.getBlock().getLocation(), false, null);
@@ -222,7 +248,7 @@ public class ClaimListener implements Listener {
         }
     }
 
-    @EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onFish(PlayerFishEvent event) {
         if (event.getPlayer().isOp()) return;
         if (event.getState() != PlayerFishEvent.State.CAUGHT_ENTITY || event.getCaught() == null) return;
@@ -241,7 +267,7 @@ public class ClaimListener implements Listener {
         }
     }
 
-    @EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBucketEmpty(PlayerBucketFillEvent event) {
         if (event.getPlayer().isOp()) return;
         Claim claim = FanaClaim.getGriefPreventionDataStore().getClaimAt(event.getBlock().getLocation(), false, null);
@@ -259,7 +285,7 @@ public class ClaimListener implements Listener {
         }
     }
 
-    @EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
         if (event.getPlayer().isOp()) return;
         Claim claim = FanaClaim.getGriefPreventionDataStore().getClaimAt(event.getBlock().getLocation(), false, null);
@@ -277,12 +303,20 @@ public class ClaimListener implements Listener {
         }
     }
 
-    @EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
+    private Location getLocationOfHolder(InventoryHolder holder) {
+        if (holder instanceof BlockInventoryHolder)
+            return ((BlockInventoryHolder) holder).getBlock().getLocation();
+        if (holder instanceof DoubleChest)
+            return ((DoubleChest) holder).getLocation();
+        return null;
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInventoryOpen(InventoryOpenEvent event) {
         if (event.getPlayer().isOp()) return;
-        if (!(event.getInventory().getHolder() instanceof BlockInventoryHolder)) return;
-        BlockInventoryHolder holder = (BlockInventoryHolder) event.getInventory().getHolder();
-        Claim claim = FanaClaim.getGriefPreventionDataStore().getClaimAt(holder.getBlock().getLocation(), false, null);
+        Location loc = getLocationOfHolder(event.getInventory().getHolder());
+        if (loc == null) return;
+        Claim claim = FanaClaim.getGriefPreventionDataStore().getClaimAt(loc, false, null);
         if (claim == null) return;
         if (claim.ownerID.equals(event.getPlayer().getUniqueId())) return;
         ClaimData claimData = FanaClaim.getInstance().getClaimManager().getClaim(claim.getID());
@@ -297,7 +331,7 @@ public class ClaimListener implements Listener {
         }
     }
 
-    @EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlaceEntity(EntityPlaceEvent event) {
         if (event.getPlayer().isOp()) return;
         Claim claim = FanaClaim.getGriefPreventionDataStore().getClaimAt(event.getBlock().getLocation(), false, null);
@@ -315,7 +349,7 @@ public class ClaimListener implements Listener {
         }
     }
 
-    @EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlaceEntity(VehicleDamageEvent event) {
         if (!(event.getAttacker() instanceof Player)) return;
         Player player = (Player) event.getAttacker();
@@ -335,11 +369,12 @@ public class ClaimListener implements Listener {
         }
     }
 
-    @EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onRightClickBlock(PlayerInteractEvent event) {
         if (event.getPlayer().isOp()) return;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getClickedBlock() != null) return;
-        Claim claim = FanaClaim.getGriefPreventionDataStore().getClaimAt(event.getClickedBlock().getLocation(), false, null);
+        Claim claim = FanaClaim.getGriefPreventionDataStore()
+            .getClaimAt(event.getClickedBlock().getLocation(), false, null);
         if (claim == null) return;
         if (claim.ownerID.equals(event.getPlayer().getUniqueId())) return;
         ClaimData claimData = FanaClaim.getInstance().getClaimManager().getClaim(claim.getID());
@@ -351,24 +386,23 @@ public class ClaimListener implements Listener {
         Material type = event.getClickedBlock().getType();
         if (type.name().endsWith("_DOOR")) could = flags.getFlag(Flag.USE_DOORS);
         else if (type.name().endsWith("_BUTTON")
-                || type == Material.LEVER
-                || type == Material.DAYLIGHT_DETECTOR
-                || type == Material.TRAPPED_CHEST
-                || type == Material.COMPARATOR
-                || type == Material.REPEATER) could = flags.getFlag(Flag.TRIGGER_REDSTONE);
+            || type == Material.LEVER
+            || type == Material.DAYLIGHT_DETECTOR
+            || type == Material.TRAPPED_CHEST
+            || type == Material.COMPARATOR
+            || type == Material.REPEATER) could = flags.getFlag(Flag.TRIGGER_REDSTONE);
         if (!could) {
             Messages.CANT_USE.send(event.getPlayer());
             event.setCancelled(true);
         }
     }
 
-    private Object2LongArrayMap<UUID> physicalWarnings = new Object2LongArrayMap<>();
-
-    @EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPhysicalInteract(PlayerInteractEvent event) {
         if (event.getPlayer().isOp()) return;
         if (event.getAction() != Action.PHYSICAL && event.getClickedBlock() != null) return;
-        Claim claim = FanaClaim.getGriefPreventionDataStore().getClaimAt(event.getClickedBlock().getLocation(), false, null);
+        Claim claim = FanaClaim.getGriefPreventionDataStore()
+            .getClaimAt(event.getClickedBlock().getLocation(), false, null);
         if (claim == null) return;
         if (claim.ownerID.equals(event.getPlayer().getUniqueId())) return;
         ClaimData claimData = FanaClaim.getInstance().getClaimManager().getClaim(claim.getID());
@@ -379,8 +413,8 @@ public class ClaimListener implements Listener {
         boolean could = true;
         Material type = event.getClickedBlock().getType();
         if (type == Material.TRIPWIRE_HOOK
-                || type == Material.TRIPWIRE
-                || type.name().endsWith("_PRESSURE_PLATE")) could = flags.getFlag(Flag.TRIGGER_REDSTONE);
+            || type == Material.TRIPWIRE
+            || type.name().endsWith("_PRESSURE_PLATE")) could = flags.getFlag(Flag.TRIGGER_REDSTONE);
         if (!could) {
             event.setCancelled(true);
             if (physicalWarnings.containsKey(event.getPlayer().getUniqueId())) {
@@ -392,13 +426,14 @@ public class ClaimListener implements Listener {
         }
     }
 
-    @EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onProjectileHit(ProjectileHitEvent event) {
         if (event.getHitBlock() == null || event.getHitBlock().getType() != Material.TARGET) return;
         if (!(event.getEntity().getShooter() instanceof Player)) return;
         Player player = (Player) event.getEntity().getShooter();
         if (player.isOp()) return;
-        Claim claim = FanaClaim.getGriefPreventionDataStore().getClaimAt(event.getHitBlock().getLocation(), false, null);
+        Claim claim = FanaClaim.getGriefPreventionDataStore()
+            .getClaimAt(event.getHitBlock().getLocation(), false, null);
         if (claim == null) return;
         if (claim.ownerID.equals(player.getUniqueId())) return;
         ClaimData claimData = FanaClaim.getInstance().getClaimManager().getClaim(claim.getID());

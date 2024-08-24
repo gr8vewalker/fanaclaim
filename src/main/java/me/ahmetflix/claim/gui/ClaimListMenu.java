@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import me.ahmetflix.claim.FanaClaim;
 import me.ahmetflix.claim.gui.item.ConfigItem;
+import me.ahmetflix.claim.message.Messages;
 import me.ahmetflix.claim.utils.Utils;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
@@ -146,7 +147,9 @@ public class ClaimListMenu {
                 int slot = event.getSlot();
                 long claimID = pageClaims.get(page).getLong(slot);
                 Claim claim = FanaClaim.getGriefPreventionDataStore().getClaim(claimID);
+                Messages.CLAIM_TELEPORTING.send(player);
                 Utils.teleportSafeLocationNoMove(player, Utils.middleCornerLocation(claim), 20 * 3L);
+                player.closeInventory();
                 return;
             }
             ItemStack clicked = inventory.getItem(event.getSlot());
